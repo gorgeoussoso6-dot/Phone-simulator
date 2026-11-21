@@ -145,7 +145,6 @@ export function sanitizeContent(raw: unknown): PhoneContent {
     calls: Array.isArray(c.calls) ? c.calls : [],
     notes: Array.isArray(c.notes) ? c.notes : [],
     photos: Array.isArray(c.photos) ? c.photos : [
-photos: [
   { id: 'photo1', name: 'IMG_0618', url: '/gallery/IMG_0618.jpeg', albumId: 'a-all' },
   { id: 'photo2', name: 'IMG_0620', url: '/gallery/IMG_0620.jpeg', albumId: 'a-all' },
   { id: 'photo3', name: 'IMG_0622', url: '/gallery/IMG_0622.jpeg', albumId: 'a-all' },
