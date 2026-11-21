@@ -170,7 +170,16 @@ export function sanitizeContent(raw: unknown): PhoneContent {
     whatsapp: { conversations: Array.isArray(c.whatsapp?.conversations) ? c.whatsapp.conversations : [] },
     calls: Array.isArray(c.calls) ? c.calls : [],
     notes: Array.isArray(c.notes) ? c.notes : [],
-    photos: Array.isArray(c.photos) && c.photos.length > 0 ? c.photos : initialContent.photos,
+    photos: [
+  ...initialContent.photos,
+  ...(Array.isArray(c.photos)
+    ? c.photos.filter(
+        (photo) => !initialContent.photos.some(
+          (initialPhoto) => initialPhoto.id === photo.id
+        )
+      )
+    : []),
+],
     albums: Array.isArray(c.albums) ? c.albums : [],
   };
 }
