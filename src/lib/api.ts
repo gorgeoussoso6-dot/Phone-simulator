@@ -9,7 +9,10 @@ export const SESSION_KEY = 'yasser-admin-session';
 async function post(path: string, body: unknown): Promise<Record<string, unknown>> {
   const res = await fetch(`${FN_URL}/${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+  'Content-Type': 'application/json',
+  'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+},
     body: JSON.stringify(body),
   });
   const data = await res.json().catch(() => ({}));
