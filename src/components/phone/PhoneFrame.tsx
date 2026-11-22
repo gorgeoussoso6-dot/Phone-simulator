@@ -184,7 +184,7 @@ export function PhoneFrame({ content }: PhoneFrameProps) {
             style={{
               transform: 'rotateY(180deg)',
               backfaceVisibility: 'hidden',
-              backgroundImage: "url('/back/77A6CBEE-A3D5-4FC1-A142-628EE55EE5DE.jpeg')",
+              backgroundImage: "url('/bolt/back/77A6CBEE-A3D5-4FC1-A142-628EE55EE5DE.jpeg')",
               backgroundSize: 'cover',
               backgroundPosition: 'center',
             }}
