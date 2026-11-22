@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PhoneContent } from '../../lib/types';
 import { HomeScreen } from './HomeScreen';
@@ -14,6 +15,7 @@ interface PhoneFrameProps {
 
 export function PhoneFrame({ content }: PhoneFrameProps) {
   const [screen, setScreen] = useState<Screen>('lock');
+  const [showBack, setShowBack] = useState(false);
   const [activeApp, setActiveApp] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
   const homeRef = useRef<HTMLDivElement>(null);
@@ -21,6 +23,7 @@ export function PhoneFrame({ content }: PhoneFrameProps) {
 
   const timeStr = content.phone.time || '5:55';
   const battery = Math.max(1, Math.min(100, content.phone.battery ?? 67));
+  const wallpaper = content.phone.wallpaper || '#0a1930';
 
   const openApp = useCallback((id: string) => {
     setActiveApp(id);
@@ -47,11 +50,9 @@ export function PhoneFrame({ content }: PhoneFrameProps) {
       if (!start || panelOpen) return;
       const dy = start.y - e.touches[0].clientY;
       const dx = Math.abs(start.x - e.touches[0].clientX);
-      if (dy > 45 && dx < 50) {
+      if (dy > 45 && dx < 50 && screen === 'home' && !activeApp) {
         touchStart.current = null;
-        if (screen === 'home' && !activeApp) {
-          setScreen('drawer');
-        }
+        setScreen('drawer');
       }
     };
     el.addEventListener('touchstart', onStart, { passive: true });
@@ -79,9 +80,7 @@ export function PhoneFrame({ content }: PhoneFrameProps) {
       if (dy > 45 && screen === 'home' && !activeApp && !panelOpen) {
         setScreen('drawer');
       }
-      if (dy < -60 && panelOpen) {
-        setPanelOpen(false);
-      }
+      if (dy < -60 && panelOpen) setPanelOpen(false);
     };
     el.addEventListener('mousedown', onDown);
     window.addEventListener('mouseup', onUp);
@@ -91,20 +90,36 @@ export function PhoneFrame({ content }: PhoneFrameProps) {
     };
   }, [screen, activeApp, panelOpen]);
 
-  const wallpaper = content.phone.wallpaper || '#0a1930';
-
   return (
-    <div className="h-full w-full flex items-center justify-center bg-[#05070c] p-2 sm:p-4">
-      <div className="relative w-full max-w-[400px] h-full max-h-[860px] aspect-[9/19.5] max-h-full min-h-[560px]">
+    <div className="h-full w-full flex flex-col items-center justify-center bg-[#05070c] p-2 sm:p-4">
+      <button
+        onClick={() => setShowBack(v => !v)}
+        className="mb-3 rounded-full bg-white/10 px-5 py-2 text-sm text-white border border-white/20"
+      >
+        {showBack ? 'إظهار واجهة الجوال' : 'قلب الجوال'}
+      </button>
+
+      <div
+        className="relative w-full max-w-[400px] h-full max-h-[860px] min-h-[560px]"
+        style={{ perspective: '1200px' }}
+      >
         <div
           className="absolute inset-0 rounded-[3rem] p-[10px] shadow-[0_0_60px_rgba(70,120,255,0.15)]"
-          style={{ background: 'linear-gradient(160deg, #2a2f3a 0%, #14161c 60%, #23262e 100%)' }}
+          style={{
+            background: 'linear-gradient(160deg, #2a2f3a 0%, #14161c 60%, #23262e 100%)',
+            transform: showBack ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            transformStyle: 'preserve-3d',
+            transition: 'transform 700ms ease',
+          }}
         >
           <div
             ref={homeRef}
             dir="rtl"
             className="relative w-full h-full rounded-[2.4rem] overflow-hidden select-none flex flex-col"
-            style={{ background: wallpaper }}
+            style={{
+              background: wallpaper,
+              backfaceVisibility: 'hidden',
+            }}
           >
             {screen === 'lock' ? (
               <LockScreen
@@ -115,7 +130,6 @@ export function PhoneFrame({ content }: PhoneFrameProps) {
               />
             ) : (
               <>
-                {/* Status bar */}
                 <div className="relative z-30 flex items-center justify-between px-6 pt-3 pb-1 text-[11px] font-semibold text-white shrink-0">
                   <span>{timeStr}</span>
                   <div className="absolute left-1/2 -translate-x-1/2 top-2 w-24 h-6 bg-black rounded-full" />
@@ -128,7 +142,6 @@ export function PhoneFrame({ content }: PhoneFrameProps) {
                   </div>
                 </div>
 
-                {/* Main area */}
                 <div className="relative flex-1 min-h-0">
                   {screen === 'home' && (
                     <div className="absolute inset-0 anim-fade">
@@ -147,7 +160,6 @@ export function PhoneFrame({ content }: PhoneFrameProps) {
                   )}
                 </div>
 
-                {/* Nav bar */}
                 <div className="shrink-0 h-12 flex items-center justify-around px-10 z-30" style={{ background: 'rgba(0,0,0,0.25)' }}>
                   <button aria-label="Recents" onClick={() => { setActiveApp(null); setScreen('home'); }} className="text-white/80 hover:text-white p-2">
                     <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="2" /></svg>
@@ -166,12 +178,18 @@ export function PhoneFrame({ content }: PhoneFrameProps) {
               </>
             )}
           </div>
-        </div>
 
-        {/* Side buttons */}
-        <div className="absolute -right-[3px] top-28 w-[3px] h-16 rounded bg-[#2a2f3a]" />
-        <div className="absolute -left-[3px] top-24 w-[3px] h-10 rounded bg-[#2a2f3a]" />
-        <div className="absolute -left-[3px] top-40 w-[3px] h-14 rounded bg-[#2a2f3a]" />
+          <div
+            className="absolute inset-[10px] rounded-[2.4rem] overflow-hidden"
+            style={{
+              transform: 'rotateY(180deg)',
+              backfaceVisibility: 'hidden',
+              backgroundImage: "url('/back/77A6CBEE-A3D5-4FC1-A142-628EE55EE5DE.jpeg')",
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          />
+        </div>
       </div>
     </div>
   );
